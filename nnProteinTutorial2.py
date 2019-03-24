@@ -14,7 +14,7 @@ LEARNING_RATE = 0.003
 TRAIN_DATA_PATH = "./proteinsTrain275"
 TEST_DATA_PATH = "./proteinsTest40"
 TRANSFORM_IMG = transforms.Compose([
-        transforms.Resize(256),
+        #transforms.Resize(256),
         transforms.CenterCrop(256),
         transforms.ToTensor(),
         transforms.Normalize(mean=[0.485, 0.456, 0.406],
@@ -30,7 +30,8 @@ class CNN(nn.Module):
     def __init__(self):
         super(CNN, self).__init__()
         self.conv1 = nn.Conv2d(3, 6, 5)
-        self.pool = nn.MaxPool2d(2, 2)
+        #self.pool = nn.MaxPool2d(2, 2)
+        self.pool = nn.AdaptiveAvgPool2d((1, 1))
         self.conv2 = nn.Conv2d(6, 16, 5)
         self.fc1 = nn.Linear(16 * 5 * 5, 120)
         self.fc2 = nn.Linear(120, 84)
