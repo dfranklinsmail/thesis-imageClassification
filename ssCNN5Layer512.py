@@ -14,13 +14,15 @@ import torch.optim as optim
 EPOCHS = 2
 BATCH_SIZE = 32
 LEARNING_RATE = 0.003
-TRAIN_DATA_PATH = "./proteins6NewSorted25PDB/training"
+TRAIN_DATA_PATH = "./proteinsNew25PDBSorted/training"
 VALIDATION_DATA_PATH = "./proteins6NewSorted25PDB/validating"
-TEST_DATA_PATH = "./proteins6NewSorted25PDB/testing"
+TEST_DATA_PATH = "./proteinsNew25PDBSorted/testing"
 
 D8244_DATA_PATH = "./proteinsD8244"
 FC699_DATA_PATH = "./proteinsFC699"
 D1185_DATA_PATH = "./proteinsD1185"
+
+MODEL_PATH = "/Users/sircrashalot/Documents/school/thesis/proteinsNew25PDBSorted2Layer.pt"
 
 TRANSFORM_IMG = transforms.Compose([
         #transforms.Resize((256, 256)),
@@ -134,43 +136,22 @@ def trainNet(net, batch_size, n_epochs, learning_rate):
         print("epoch finished, took {:.2f}s".format(time.time() - training_start_time))
         #At the end of the epoch, do a pass on the validation set
         computeAccuracy(net, loss, validation_data_loader, 'validate epoch')
-        
-    print("Training finished, took {:.2f}s".format(time.time() - training_start_time))
-    computeAccuracy(net, loss, train_data_loader, 'training data')
-    computeAccuracy(net, loss, validation_data_loader, 'validate data')
-    computeAccuracy(net, loss, test_data_loader, 'test epoch')
+        print("Training finished, took {:.2f}s".format(time.time() - training_start_time))
+
+        test(net)
+
+def test(model):
+   loss = torch.nn.CrossEntropyLoss()
+
+   computeAccuracy(model, loss, train_data_loader, 'training data')
+   computeAccuracy(model, loss, validation_data_loader, 'validate data')
+   computeAccuracy(model, loss, test_data_loader, 'test epoch')
    
-    computeAccuracy(net, loss, d8244_data_loader, 'D8244 dataset')
-    #computeAccuracy(net, loss, d1185_data_loader, 'D1185 dataset')
-    #computeAccuracy(net, loss, fc699_data_loader, 'FC699 dataset')
+   #computeAccuracy(model, loss, d8244_data_loader, 'D8244 dataset')
+   #computeAccuracy(model, loss, d1185_data_loader, 'D1185 dataset')
+   #computeAccuracy(model, loss, fc699_data_loader, 'FC699 dataset')
 
-# def computeAccuracy(net, loss, accuracy_data_loader, title):
-#   total_val_loss = 0
-#   total = 0
-#   correct = 0
-#   for inputs, labels in accuracy_data_loader:
-
-#       #Wrap tensors in Variables
-#       inputs, labels = Variable(inputs), Variable(labels)
-
-#       #Forward pass
-#       val_outputs = net(inputs)
-#       val_loss_size = loss(val_outputs, labels)
-
-#       _, predicted = torch.max(val_outputs.data, 1)
-#       total += labels.size(0)
-#       correct += (predicted == labels).sum().item()
-
-#       #total_val_loss += val_loss_size.data[0]
-#       total_val_loss += val_loss_size.item()
-
-#   print("Validation loss = {:.2f}".format(total_val_loss / len(accuracy_data_loader)))
-
-#   print("{} total images {}".format(title, total))
-#   print("{} correct images {}".format(title, correct))
-  
-#   print('Accuracy of the network on the {} images: {} %%'.format(title, 100 * correct / total))
-
+        
 def computeAccuracy(net, loss, accuracy_data_loader, title):
   total_val_loss = 0
   total = 0
@@ -288,8 +269,16 @@ def computeAccuracy(net, loss, accuracy_data_loader, title):
   print("incorrect d images predicted a {}".format(total_d_a))
   print("incorrect d images predicted b {}".format(total_d_b))
   print("incorrect d images predicted c {}".format(total_d_c))
+
+
+def save(model) :
+   torch.save(model.state_dict(), MODEL_PATH)
+
+def load(model):
+   model.load_state_dict(torch.load(MODEL_PATH))
+   model.eval()
   
-class CNN5Layer(nn.Module):
+class CNN5Layers(nn.Module):
     
       #Our batch shape for input x is (3, 32, 32)
     
@@ -409,5 +398,9 @@ class CNN(nn.Module):
 
 if __name__ == '__main__':
   CNN = CNN()
-  print(torch.cuda.is_available())
-  trainNet(CNN, batch_size=32, n_epochs=5, learning_rate=0.001)
+  #print(torch.cuda.is_available())
+  #trainNet(CNN, batch_size=32, n_epochs=5, learning_rate=0.001)
+  #save(CNN)
+  load(CNN)
+  test(CNN)
+  
